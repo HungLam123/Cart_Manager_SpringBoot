@@ -1,0 +1,30 @@
+package com.mockproject.service.impl;
+
+import java.time.YearMonth;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.mockproject.repository.StatsRepo;
+import com.mockproject.service.StatsService;
+
+@Service
+public class StatsServiceImpl implements StatsService{
+
+	@Autowired
+	private StatsRepo repo;
+	
+	@Override
+	public String[][] getTotalPriceLast6Month() {
+		//2 Dong 6 Cot
+		String[][] result = new String[2][6];
+		YearMonth currentTimes = YearMonth.now(); //lay thang nam hien tai
+		for(int i = 0; i < 6; i++) {
+			String month = currentTimes.minusMonths((long)i).getMonthValue() + "";
+			String year = currentTimes.minusMonths((long)i).getYear() + "";
+			result[0][5-i] = month + "-" + year;
+			result[1][5-i] = repo.getTotalPricePerMonth(month, year);
+		}
+		return result;
+	}
+}
