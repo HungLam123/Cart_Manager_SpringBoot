@@ -2,13 +2,14 @@ package com.mockproject.service;
 
 import java.util.List;
 
-import com.mockproject.entity.AuthenticationProvider;
 import com.mockproject.entity.Users;
 
 public interface UsersService {
 	Users findByUsername(String username);
 	
 	Users findByEmail(String email);
+	
+	Users findByIdUser(Long id);
 	
 	Users findByUsernameIsdeletedEnabled(String username);
 	
@@ -39,7 +40,7 @@ public interface UsersService {
 	
 	void updateUserDetails(Users user);
 
-	void proccessOauthPostLogin(String username, String fullname, String password, String email, AuthenticationProvider provider);
+	Users updateUserAfterOauthLoginSuccess(String emailUser);
 
-	void updateUserAfterOauthLoginSuccess(Users usernameUser, String fullname, AuthenticationProvider provider);
+	Users proccessOauthPostLogin(String username, String fullname, String password, String email, String clientName);
 }

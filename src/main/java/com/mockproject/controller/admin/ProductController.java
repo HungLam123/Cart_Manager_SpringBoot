@@ -1,5 +1,10 @@
 package com.mockproject.controller.admin;
 
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -7,12 +12,14 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.mockproject.entity.ProductTypes;
@@ -28,7 +35,7 @@ public class ProductController {
 
 	@Autowired
 	private ProductsService productsService;
-	
+
 	@Autowired
 	private ProductTypesService productTypesService;
 
@@ -44,10 +51,10 @@ public class ProductController {
 		model.addAttribute("productss", productss);
 
 		model.addAttribute("productRequest", new Products());
-		
+
 		List<ProductTypes> productTypes = productTypesService.findAll();
 		model.addAttribute("productTypes", productTypes);
-		
+
 		List<UnitTypes> unitTypes = unitTypesService.findAll();
 		model.addAttribute("unitTypes", unitTypes);
 		return "admin/product";
@@ -56,14 +63,14 @@ public class ProductController {
 
 	@GetMapping("/delete")
 	public String doGetDeleted(@RequestParam("id") Long id, RedirectAttributes ra) {
-			try {
-				productsService.deleteLogical(id);
-				ra.addFlashAttribute("succeedMessage", "ProductId :" + id + "Was deleted");
-				System.out.println(id);
-			} catch (Exception e) {
-				e.printStackTrace();
-				ra.addFlashAttribute("errorMessage", "Cannot deleted products" + id);
-			}
+		try {
+			productsService.deleteLogical(id);
+			ra.addFlashAttribute("succeedMessage", "ProductId :" + id + "Was deleted");
+			System.out.println(id);
+		} catch (Exception e) {
+			e.printStackTrace();
+			ra.addFlashAttribute("errorMessage", "Cannot deleted products" + id);
+		}
 		return "redirect:/admin/product";
 	}
 
@@ -78,25 +85,44 @@ public class ProductController {
 		}
 		return "redirect:/admin/product";
 	}
-	
+
 	@GetMapping("/edit")
-	public String doGetEditProducts(@RequestParam("id")Long id, Model model) {
+	public String doGetEditProducts(@RequestParam("id") Long id, Model model) {
 		Products productRequest = productsService.findById(id);
 		model.addAttribute("productRequest", productRequest);
-		
+
 		List<ProductTypes> productTypes = productTypesService.findAll();
 		model.addAttribute("productTypes", productTypes);
-		
+
 		List<UnitTypes> unitTypes = unitTypesService.findAll();
 		model.addAttribute("unitTypes", unitTypes);
-		
+
 		return "admin/product::#form";
 	}
-	
+
 	@PostMapping("/create")
-	public String doPostCreate(@ModelAttribute("productRequest") Products productRequest, RedirectAttributes ra, Model model) {
-		try { 
-			productsService.insert(productRequest);
+	public String doPostCreate(@ModelAttribute("productRequest") Products productRequest, RedirectAttributes ra,
+			Model model, @RequestParam("imageFile") MultipartFile multipartFile) {
+		try {
+			if (!multipartFile.isEmpty()) {
+				String fileName = StringUtils.cleanPath(multipartFile.getOriginalFilename());
+				productRequest.setImgUrl(fileName);
+				Products insertProducts = productsService.insert(productRequest);
+				String uploadDir = "\\Fpoly\\Springboot\\Java5\\Cart_Manager-main\\src\\main\\resources\\static\\admin\\img\\Product_Image\\"
+						+ insertProducts.getId();
+				Path uploadPath = Paths.get(uploadDir);
+
+				if (!Files.exists(uploadPath)) {
+					Files.createDirectories(uploadPath);
+				}
+				InputStream inputStream = multipartFile.getInputStream();
+				Path filePath = uploadPath.resolve(fileName);
+				Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+			} else {
+				ra.addFlashAttribute("errorMessage",
+						"Cannot create product, Please choose Image, Try again! :" + productRequest.getName());
+				return "redirect:/admin/product";
+			}
 			ra.addFlashAttribute("succeedMessage", "Product " + productRequest.getName() + " Was created successfully");
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -104,10 +130,10 @@ public class ProductController {
 		}
 		return "redirect:/admin/product";
 	}
-	
+
 	@PostMapping("/edit")
-	public String doPostUpdate(@Valid @ModelAttribute("productRequest") Products productRequest, BindingResult bindingResult,
-			RedirectAttributes redirectAttribute, Model model) {
+	public String doPostUpdate(@Valid @ModelAttribute("productRequest") Products productRequest,
+			BindingResult bindingResult, RedirectAttributes redirectAttribute, Model model) {
 		if (bindingResult.hasErrors()) {
 			bindingResult.getAllErrors().forEach(error -> System.out.println(error.getDefaultMessage()));
 			redirectAttribute.addFlashAttribute("errorMessage", "Product is not valid");
@@ -115,7 +141,7 @@ public class ProductController {
 			try {
 				List<ProductTypes> productTypes = productTypesService.findAll();
 				model.addAttribute("productTypes", productTypes);
-				
+
 				List<UnitTypes> unitTypes = unitTypesService.findAll();
 				model.addAttribute("unitTypes", unitTypes);
 				productsService.update(productRequest);

@@ -13,6 +13,8 @@ import lombok.Data;
 @AllArgsConstructor
 public class CustomOauth2User implements OAuth2User{
 
+	private String clientName;
+	
 	private OAuth2User oauth2User;
 	
 	@Override
@@ -39,5 +41,9 @@ public class CustomOauth2User implements OAuth2User{
 	
 	public String getFullname() {
 		return oauth2User.getAttribute("name");
+	}
+	
+	public String getClientName() {
+		return this.clientName;
 	}
 }

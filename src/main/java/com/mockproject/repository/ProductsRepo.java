@@ -7,7 +7,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.mockproject.entity.ProductTypes;
@@ -38,15 +37,16 @@ public interface ProductsRepo extends JpaRepository<Products, Long>{
 	@Modifying(clearAutomatically = true)
 	@Query(value = "Update products Set isDeleted = 1 where id = ?", nativeQuery = true)
 	void updateLogical(Long id);
+	
 	@Modifying(clearAutomatically = true)
 	@Query(value = "Update products Set isDeleted = 0 where id = ?", nativeQuery = true)
 	void updateRepeat(Long id);
 	
-	@Modifying(clearAutomatically = true)
-	@Query(value = "insert into products(id, name, typeId, quantity, price, unitId, description, slug)"
-			+ " values(:#{#sp.id}, :#{#sp.name}, :#{#sp.productType.id}, :#{#sp.quantity}, :#{#sp.price}, :#{#sp.unitType.id},"
-			+ " :#{#sp.description}, :#{#sp.slug})", nativeQuery = true)
-	Products insert(@Param("sp")Products products);
+//	@Modifying(clearAutomatically = true)
+//	@Query(value = "insert into products(id, name, typeId, quantity, price, imgUrl, unitId, description, slug)"
+//			+ " values(:#{#sp.id}, :#{#sp.name}, :#{#sp.productType.id}, :#{#sp.quantity}, :#{#sp.price}, :#{#sp.imgUrl}, :#{#sp.unitType.id},"
+//			+ " :#{#sp.description}, :#{#sp.slug})", nativeQuery = true)
+//	Products insert(@Param("sp")Products products);
 
 	@Modifying(clearAutomatically = true)
 	@Query(value = "Update Products SET name = ?1, quantity = ?2, price = ?3, description = ?4"

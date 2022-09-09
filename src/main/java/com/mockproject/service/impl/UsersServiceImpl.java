@@ -1,6 +1,7 @@
 package com.mockproject.service.impl;
 
 import java.util.List;
+import java.util.Optional;
 
 import javax.mail.internet.MimeMessage;
 import javax.transaction.Transactional;
@@ -14,7 +15,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.mockproject.Security.EncoderConfig;
-import com.mockproject.entity.AuthenticationProvider;
 import com.mockproject.entity.Roles;
 import com.mockproject.entity.Users;
 import com.mockproject.repository.UsersRepo;
@@ -203,12 +203,24 @@ public class UsersServiceImpl implements UsersService {
 	@Override
 	public void updateUserDetails(Users user) {
 		repo.updateUserDetails(user.getFullname(), user.getUsername());
+	}
 
+	@Override
+	public Users findByIdUser(Long id) {
+		Optional<Users> optional = repo.findById(id);
+		return optional.isPresent() ? optional.get() : null;
+	}
+
+	@Override
+	public Users updateUserAfterOauthLoginSuccess(String emailUser) {
+		Users userResponse = repo.findByEmail(emailUser);
+		return userResponse;
 	}
 
 	@Transactional(rollbackOn = { Exception.class, Throwable.class })
 	@Override
-	public void proccessOauthPostLogin(String username, String fullname, String password, String email, AuthenticationProvider provider) {
+	public Users proccessOauthPostLogin(String username, String fullname, String password, String email,
+			String clientName) {
 		Users user = new Users();
 		user.setUsername(username);
 		user.setFullname(fullname);
@@ -223,16 +235,8 @@ public class UsersServiceImpl implements UsersService {
 		
 		user.setEnabled(Boolean.TRUE);
 		user.setIsDeleted(Boolean.FALSE);
-		user.setAuthProvider(provider); 
+		user.setAuthProvider(clientName); 
 		
-		repo.saveAndFlush(user);
-	}
-
-	@Override
-	public void updateUserAfterOauthLoginSuccess(Users usernameUser, String fullname, AuthenticationProvider provider) {
-		usernameUser.setFullname(fullname);
-		usernameUser.setAuthProvider(provider);
-		
-		repo.saveAndFlush(usernameUser);
+		return repo.saveAndFlush(user);
 	}
 }

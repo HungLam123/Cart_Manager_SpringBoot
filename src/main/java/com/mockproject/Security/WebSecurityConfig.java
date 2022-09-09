@@ -41,7 +41,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Override
 	public void configure(AuthenticationManagerBuilder auth) throws Exception {
-		// provider userservice for spring sercurity
+		// provider userservice for spring security
 		// provider password encoder
 		auth.userDetailsService(customerUserServiceImpl).passwordEncoder(encoderConfig.passwordEncoder());
 	}
@@ -97,13 +97,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 				.userService(ouath2UserService)
 				.and();
 			
-		// logout
-		http.logout(logout -> logout
-				.logoutUrl("/logout")
-				.logoutSuccessUrl("/index")
-				.deleteCookies("JSESSIONID")
-				.invalidateHttpSession(true));
-
 		// filter check jwt
 		http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 	}
@@ -112,7 +105,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	public void configure(WebSecurity web) throws Exception {
 		web.ignoring().antMatchers("/user/*", "/user/css/*", "/user/fonts/*", "/user/img/*", "/user/js/*", "/admin/*",
 				"/admin/dist/*", "/admin/dist/css/*", "/admin/dist/css/alt/*", "/admin/dist/img/*",
-				"/admin/dist/img/credit/*", "/admin/dist/js/*", "/admin/dist/js/pages/*", "/admin/img/*",
+				"/admin/dist/img/credit/*", "/admin/dist/js/*", "/admin/dist/js/pages/*", "/admin/img/**",
 				"/admin/plugins/**");
 	}
 }

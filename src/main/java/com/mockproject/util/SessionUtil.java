@@ -15,6 +15,7 @@ public class SessionUtil {
 	}
 
 	public static void validateCart(HttpSession session) {
+		//trong session chưa có giỏ hàng thì new 1 cái giỏ hàng cho ngt
 		if (ObjectUtils.isEmpty(session.getAttribute(SessionConstant.CURRENT_CART))) {
 			session.setAttribute(SessionConstant.CURRENT_CART, new CartDto());
 		}
